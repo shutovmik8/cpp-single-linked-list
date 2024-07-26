@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <string>
 #include <utility>
@@ -132,9 +133,7 @@ public:
     }
 
     void PopFront() noexcept {
-        if (size_ == 0) {
-            return;
-        }
+        assert(size_ != 0);
         Node* delete_item = head_.next_node;
         head_.next_node = delete_item->next_node;
         --size_;
@@ -142,9 +141,7 @@ public:
     }
 
     Iterator EraseAfter(ConstIterator pos) noexcept {
-        if (pos.node_->next_node == nullptr) {
-            return Iterator(nullptr);
-        }
+        assert(pos.node_->next_node != nullptr);
         Node* delete_item = pos.node_->next_node;
         pos.node_->next_node = delete_item->next_node;
         delete delete_item;
@@ -161,28 +158,13 @@ public:
     SingleLinkedList(const SingleLinkedList& other) {
         Copy(other.cbegin(), other.cend());
     }
-
-    template <typename It>
-    void Copy(It begin, It end) {
-        if (begin == end) {
-            return;
-        }
-        SingleLinkedList tmp;
-        tmp.head_.next_node = new Node(*begin, nullptr); 
-        ++tmp.size_;
-        ++begin;
-        Node* runner = tmp.head_.next_node;
-        while (begin != end) {
-            runner->next_node = new Node(*begin, nullptr);
-            runner = runner->next_node;
-            ++tmp.size_;
-            ++begin;
-        }
-        swap(tmp);
-    }
     
     SingleLinkedList& operator=(const SingleLinkedList& rhs) {
         if (this == &rhs) {
+            return *this;
+        }
+        if (rhs.size_ == 0) {
+            Clear();
             return *this;
         }
         SingleLinkedList tmp(rhs);
@@ -191,8 +173,8 @@ public:
     }
     
     void swap(SingleLinkedList& other) noexcept {
-    	std::swap(head_.next_node, other.head_.next_node);
-    	std::swap(size_, other.size_);
+        std::swap(head_.next_node, other.head_.next_node);
+        std::swap(size_, other.size_);
     }
     
     ~SingleLinkedList() {
@@ -221,16 +203,32 @@ public:
     }
 
     [[nodiscard]] bool IsEmpty() const noexcept {
-        if (size_) {
-            return false;
-        }
-        return true;
+        return (size_ == 0);
     }
 
 private:
 
     Node head_;
     size_t size_ = 0;
+
+    template <typename It>
+    void Copy(It begin, It end) {
+        if (begin == end) {
+            return;
+        }
+        SingleLinkedList tmp;
+        tmp.head_.next_node = new Node(*begin, nullptr); 
+        ++tmp.size_;
+        ++begin;
+        Node* runner = tmp.head_.next_node;
+        while (begin != end) {
+            runner->next_node = new Node(*begin, nullptr);
+            runner = runner->next_node;
+            ++tmp.size_;
+            ++begin;
+        }
+        swap(tmp);
+    }
 };
 
 template <typename Type>
